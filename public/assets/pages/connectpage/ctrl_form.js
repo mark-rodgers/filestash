@@ -28,7 +28,7 @@ export default async function(render) {
     const $page = createElement(`
         <div class="no-select component_page_connection_form">
             <style>${await CSS(import.meta.url, "ctrl_form.css")}</style>
-            <div role="navigation" class="buttons scroll-x box"></div>
+            <div role="navigation" class="buttons scroll-x box hidden"></div>
             <div data-bind="form" class="box hidden"><form></form></div>
         </div>
     `);
@@ -46,6 +46,7 @@ export default async function(render) {
         rxjs.map((conns) => conns.map((conn, i) => ({ ...conn, n: i }))),
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
         applyMutations($nav, "appendChild"),
+        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden") }),
         rxjs.tap(() => animate($nav)),
     ));
 
@@ -55,7 +56,7 @@ export default async function(render) {
             let n = parseInt(settings_get("login_tab"));
             if (Number.isNaN(n)) n = (conns.length || 0) / 2 - 1;
             if (n < 0 || n >= conns.length) n = 0;
-            return n
+            return n;
         }),
         rxjs.tap((current) => setCurrentBackend(Math.round(current))),
     ));
@@ -171,7 +172,7 @@ export default async function(render) {
             if (Object.keys(p).length > 0) {
                 url += "&state=" + btoa(JSON.stringify(p));
             }
-            location.href = url
+            location.href = url;
             return rxjs.EMPTY;
         }),
         rxjs.mergeMap((formData) => { // CASE 2: oauth2 related backends like dropbox and gdrive
